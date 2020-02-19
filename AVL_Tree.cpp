@@ -1,147 +1,208 @@
-#include<bits/stdc++.h> 
+/*
+
+	Implementation of AVL-Tree
+	insertion
+	deletion using rotations
+
+*/
+#include<iostream> 
+#include<algorithm>
 using namespace std; 
-struct Node 
+struct node
 {
-	int key; 
-	Node *left; 
-	Node *right; 
-	int height; 
-}; 
+	int data;
+	int height;
+	node* left;
+	node* right;
+};
 
-int max(int a, int b); 
-int height(Node *N) 
-{ 
-	if (N == NULL) 
-		return 0; 
-	return N->height; 
-} 
+node* Getnode(int key)
+{
+	node* nn=new node();
+	nn->data=key;
+	nn->left=NULL;
+	nn->right=NULL;
+	nn->height=1;
 
-int max(int a, int b) 
-{ 
-	return (a > b)? a : b; 
-} 
+	return nn;
+}
 
-Node* newNode(int key) 
-{ 
-	Node* node = new Node(); 
-	node->key = key; 
-	node->left = NULL; 
-	node->right = NULL; 
-	node->height = 1; 
-	return(node); 
-} 
- 
-Node* rightRotate(Node *y) 
-{ 
-	Node *x = y->left; 
-	Node *T2 = x->right; 
+int Height(node* n)
+{
+	if(n==NULL)
+		return 0;
+	return n->height;
+}
+node* Get_Min_valu_Node(node* root)
+{
+	if(root==NULL)
+		return root;
+	node* temp=root;
+	while(temp->left!=NULL)
+		temp=temp->left;
+	return temp;
+}
+node* RightRotate(node* n)
+{
+	node* x=n->left;
+	node* y=x->right;
 
-	// Perform rotation 
-	x->right = y; 
-	y->left = T2; 
+	//rotation
+	x->right=n;
+	n->left=y;
 
-	// Update heights 
-	y->height = max(height(y->left), 
-					height(y->right)) + 1; 
-	x->height = max(height(x->left), 
-					height(x->right)) + 1; 
+	n->height=max(Height(n->left),Height(n->right))+1;
+	x->height=max(Height(x->left),Height(x->right))+1;
 
-	return x; 
-} 
+	return x;
+}
 
-Node* leftRotate(Node *x) 
-{ 
-	Node *y = x->right; 
-	Node *T2 = y->left; 
+node* LeftRotation(node* n)
+{
+	node* x=n->right;
+	node* y=x->left;
 
-	// Perform rotation 
-	y->left = x; 
-	x->right = T2; 
+	//Rotation
+	x->left=n;
+	n->right=y;
 
-	x->height = max(height(x->left),	 
-					height(x->right)) + 1; 
-	y->height = max(height(y->left), 
-					height(y->right)) + 1; 
+	n->height=max(Height(n->left),Height(n->right))+1;
+	x->height=max(Height(x->left),Height(x->right))+1;
 
-	return y; 
-} 
+	return x;
+}
+
+int GetBalance(node* n)
+{
+	if(n==NULL)
+		return 0;
+	return (Height(n->left)-Height(n->right));
+}
 
 
-int getBalance(Node *N) 
-{ 
-	if (N == NULL) 
-		return 0; 
-	return height(N->left) - height(N->right); 
-} 
+node* Insert(node* root,int key)
+{
+	 if(root==NULL)
+	 	return Getnode(key);
+	 else if(root->data<key)
+	 	root->right=Insert(root->right,key);
+	 else if(root->data>key)
+	 	root->left=Insert(root->left,key);
+	 else 
+	 	return root;
 
-Node* insert(Node* node, int key) 
-{ 
-	if (node == NULL) 
-		return(newNode(key)); 
+	 root->height=max(Height(root->left),Height(root->right))+1;
 
-	if (key < node->key) 
-		node->left = insert(node->left, key); 
-	else if (key > node->key) 
-		node->right = insert(node->right, key); 
-	else 
-		return node; 
+	 int balance=GetBalance(root);
 
+	 if(balance>1 && key<root->left->data){
+	 	return RightRotate(root);
+	 	return root;
+	 }
+
+	 if(balance<-1 && key>root->right->data){
+	 	return LeftRotation(root);
+	 	return root;
+	 }
+
+	 if(balance>1 && key>root->left->data)
+	 {
+	 	root->left=LeftRotation(root->left);
+	 	return RightRotate(root);
+	 	return root;
+
+	 }
+
+	 if(balance<-1 && key<root->right->data)
+	 {
+	 	root->right=RightRotate(root->right);
+	 	return LeftRotation(root);
+	 	return root;
+
+	 }
+	 return root;
+}
+
+node* DeleteNode(node* root,int key)
+{
+	if(root==NULL)
+		return root;
+	if(key<root->data)
+		root->left=DeleteNode(root->left,key);
+	else if(key>root->data)
+		root->right=DeleteNode(root->right,key);
+	else
+	{
+		// node with one child or no child
+		if(root->left==NULL || root->right==NULL)
+		{
+			node* temp=root->left?root->left:root->right;
+			if(temp==NULL)//No child case
+			{
+				temp=root;
+				root=NULL;
+
+			}
+			else
+				*root=*temp;
+			free(temp);
+		}
+		else
+		{
+			node* temp=Get_Min_valu_Node(root);
+			root->data=temp->data;
+			root->right=DeleteNode(root->right,temp->data);
+		}
+	}
+
+	if(root==NULL)
+		return root;
+	root->height=1+max(Height(root->left),Height(root->right));
+
+	int balance=GetBalance(root);
+
+	if(balance>1 && GetBalance(root->left)>=0)
+		return RightRotate(root);
+	if(balance>1 && GetBalance(root->left)<0)
+	{
+		root->left=LeftRotation(root->left);
+		return RightRotate(root);
+	}
+	if(balance<-1 && GetBalance(root->right)<=0)
+		return LeftRotation(root);
+	if(balance<-1 && GetBalance(root->right)>0)
+	{
+		root->right=RightRotate(root->right);
+		return LeftRotation(root);
+	}
+
+	return root;
+
+}
+
+void print(node* n)
+{
+	node* temp=n;
+	if(temp!=NULL)
+	{
+		print(temp->left);
+		cout<<temp->data<<" ";
+		print(temp->right);
+	}
+}
+int main()
+{
+	node* root=NULL;
 	
-	node->height = 1 + max(height(node->left),height(node->right)); 
-						
-	int balance = getBalance(node); 
-
-
-	// Left Left Case 
-	if (balance > 1 && key < node->left->key) 
-		return rightRotate(node); 
-
-	// Right Right Case 
-	if (balance < -1 && key > node->right->key) 
-		return leftRotate(node); 
-
-	// Left Right Case 
-	if (balance > 1 && key > node->left->key) 
-	{ 
-		node->left = leftRotate(node->left); 
-		return rightRotate(node); 
-	} 
-
-	// Right Left Case 
-	if (balance < -1 && key < node->right->key) 
-	{ 
-		node->right = rightRotate(node->right); 
-		return leftRotate(node); 
-	} 
-	return node; 
-} 
-
-void preOrder(Node *root) 
-{ 
-	if(root != NULL) 
-	{ 
-		cout << root->key << " "; 
-		preOrder(root->left); 
-		preOrder(root->right); 
-	} 
-} 
-
-
-int main() 
-{ 
-	Node *root = NULL; 
-	
-	root = insert(root,10); 
-	root = insert(root,20); 
-	root = insert(root,30); 
-	root = insert(root,40); 
-	root = insert(root,50); 
-	root = insert(root,25); 
-	
-	cout << "Preorder traversal of the "
-			"constructed AVL tree is \n"; 
-	preOrder(root); 
-	
-	return 0; 
-} 
+	root = Insert(root, 40); 
+	root = Insert(root, 5); 
+	root = Insert(root, 25); 
+	root = Insert(root, 10); 
+	root = Insert(root, 2); 
+	root = Insert(root, 30); 
+	root = DeleteNode(root,10);
+	root = DeleteNode(root,5);
+	print(root);
+	cout<<endl;
+}
 
