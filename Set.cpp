@@ -1,9 +1,9 @@
 /*
-	Disjoint-set Data Structure
+	Disjoint-set Data Structure Implemented using rank and path compression
 	Operations:
-				  1.makeset
-				  2.find
-				  3.union 
+		   1.makeset
+       		   2.find
+		   3.union 
    @Author 
    Naresh Kollipora
 */
