@@ -32,22 +32,25 @@ node* Make_Set(int data,map<int,node*> &m)
 	cout<<"MAked"<<endl;
 }
 
-int Find(node *n)
+node* Find(node *n)
 {
-	//node p = n->parent;
+	
 
 	if(n->parent==n)
-		return n->data;
+		return n;
 	else
-		return Find(n->parent);
+		n->parent = Find(n->parent);
 
-	return -1;
+	return n->parent;
 }
 
 void Union(node* n1,node* n2,std::map<int, node*> &m)
 {
-	int p1 = Find(n1);
-	int p2 = Find(n2);
+	node* N1 = Find(n1);
+	node* N2 = Find(n2);
+	
+	int p1 = N1->data;
+	int p2 = N2->data;
 
 	if(p1==p2)
 		return ;
@@ -74,13 +77,13 @@ int main()
 	Make_Set(5,m);
 	Make_Set(6,m);
 
-	if(Find(m[1])!=-1)
-		cout<<"S"<<endl;
+	
 	Union(m[1],m[2],m);
 	Union(m[2],m[3],m);
 	Union(m[1],m[6],m);
 	Union(m[3],m[5],m);
 
-	cout<<Find(m[5])<<endl;
+    node* n = Find(m[5]);
+	cout<<n->data<<endl;
 
 }
